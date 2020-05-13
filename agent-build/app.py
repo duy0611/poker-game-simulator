@@ -13,6 +13,10 @@ from src.poker_agent import get_agent_action
 LOGGER = logging.getLogger(__name__)
 
 
+@app.route('/health', methods=['GET'])
+def health():
+    return "OK"
+
 @app.route('/agent_action', methods=['POST'])
 def agent_action():
     jsondata = request.get_json()
