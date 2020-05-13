@@ -1,7 +1,7 @@
 import random
 import poker
 
-from src.poker_simulator import start_new_game
+from src.poker_simulator import start_simulation
 
 
-start_new_game(players=['dnguyen', 'erik', 'mathias', 'dtran'], init_pot=50, min_pot=5)
+start_simulation(players=['dnguyen', 'erik', 'mathias', 'dtran'], init_pot=50, small_blind_stake=5, max_iteration=10)

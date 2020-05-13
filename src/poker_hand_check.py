@@ -92,7 +92,7 @@ def check_four_of_a_kind(hand):
     values = [c.rank for c in hand]
     value_counts = defaultdict(lambda:0)
     for v in values: 
-        value_counts[v]+=1
+        value_counts[v] += 1
     if 4 in value_counts.values():
         return True
     return False
@@ -101,7 +101,7 @@ def check_full_house(hand):
     values = [c.rank for c in hand]
     value_counts = defaultdict(lambda:0)
     for v in values: 
-        value_counts[v]+=1
+        value_counts[v] += 1
     if 2 in value_counts.values() and 3 in value_counts.values():
         return True
     return False
@@ -110,7 +110,7 @@ def check_flush(hand):
     suits = [c.suit for c in hand]
     suit_counts = defaultdict(lambda:0)
     for s in suits: 
-        suit_counts[s]+=1
+        suit_counts[s] += 1
     if 5 in suit_counts.values():
         return True
     return False
@@ -119,7 +119,7 @@ def check_straight(hand):
     values = [c.rank for c in hand]
     value_counts = defaultdict(lambda:0)
     for v in values:
-        value_counts[v] += 1
+        value_counts[v]  +=  1
     rank_values = [card_order_dict[i] for i in values]
     value_range = max(rank_values) - min(rank_values)
     if len(set(value_counts.values())) == 1 and (value_range==4):
@@ -134,7 +134,7 @@ def check_three_of_a_kind(hand):
     values = [c.rank for c in hand]
     value_counts = defaultdict(lambda:0)
     for v in values:
-        value_counts[v]+=1
+        value_counts[v] += 1
     if 3 in value_counts.values():
         return True
     else:
@@ -144,7 +144,7 @@ def check_two_pairs(hand):
     values = [c.rank for c in hand]
     value_counts = defaultdict(lambda:0)
     for v in values:
-        value_counts[v]+=1
+        value_counts[v] += 1
     if list(value_counts.values()).count(2) == 2:
         return True
     else:
@@ -154,7 +154,7 @@ def check_one_pairs(hand):
     values = [c.rank for c in hand]
     value_counts = defaultdict(lambda:0)
     for v in values:
-        value_counts[v]+=1
+        value_counts[v] += 1
     if list(value_counts.values()).count(2) == 1:
         return True
     else:

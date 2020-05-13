@@ -38,6 +38,9 @@ class GameState:
     def get_player_pot(self, player: str):
         return self.player_pots[self.players.index(player)]
 
+    def get_player_with_most_chips(self):
+        return sorted([(x, y) for (x, y) in self.current_player_states if y > 0], key=lambda x:x[1])[-1][0]
+
     def __str__(self):
         return """
         GameState[

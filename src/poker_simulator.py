@@ -10,10 +10,23 @@ from src.models.betting_state import BettingState
 from src.poker_agent import agent_call_action
 
 
-def start_new_game(players: List[str], init_pot: int = 100, min_pot: int = 5, max_round: int = 100):
-    new_game = Game(players=players, init_pot=init_pot, min_pot=min_pot)
+def start_simulation(players: List[str], init_pot: int = 100, small_blind_stake: int = 5, max_iteration: int = 100):
+    histogram = { player: 0 for player in players }
+    for i in range(max_iteration):
+        winner = start_new_game(players=players, init_pot=init_pot, small_blind_stake=small_blind_stake)
+        histogram[winner] += 1
+    
+    histogram_percentage = { player: str(win_count*100/max_iteration)+'%' for (player, win_count) in histogram.items() }
+
+    print('End simulation. Winners are: %s' % histogram_percentage)
+
+
+def start_new_game(players: List[str], init_pot: int = 100, small_blind_stake: int = 5, max_round: int = 100):
+    new_game = Game(players=players, init_pot=init_pot, small_blind_stake=small_blind_stake)
 
     print('New game: %s' % new_game)
+
+    game_result = GameResult(None)
 
     game_state = GameState(
         players=players,
@@ -22,11 +35,11 @@ def start_new_game(players: List[str], init_pot: int = 100, min_pot: int = 5, ma
 
     print('New game state: %s' % game_state)
 
-    # test with only 5 rounds
+    # test with only max_round
     for pos in range(max_round):
 
         if len(game_state.remaining_players) == 1:
-            print('End game. Winner is ' + game_state.remaining_players[0])
+            game_result.set_winner(game_state.remaining_players[0])
             break
 
         deck = list(Card)
@@ -38,7 +51,7 @@ def start_new_game(players: List[str], init_pot: int = 100, min_pot: int = 5, ma
             players=game_state.remaining_players, 
             player_pots=game_state.remaining_player_pots, 
             player_hands=game_state.generate_player_hands(deck),
-            min_pot=min_pot)
+            small_blind_stake=small_blind_stake)
 
         print('New game round: %s' % game_round)
 
@@ -84,6 +97,13 @@ def start_new_game(players: List[str], init_pot: int = 100, min_pot: int = 5, ma
 
         round_complete(game_round, game_state, pre_flop_state, post_flop_state, turn_state, river_state)
 
+    if (not game_result.winner):
+        # determine winner in the remaining players by number of chips
+        game_result.set_winner(game_state.get_player_with_most_chips())
+
+    print('End game. Winner is ' + game_result.winner)
+    return game_result.winner
+
 
 def game_state_move(state_index: int, board_state: str, board_cards: List[Card], 
     game_round: GameRound, game_state: GameState, previous_betting_state: BettingState):
@@ -95,11 +115,11 @@ def game_state_move(state_index: int, board_state: str, board_cards: List[Card],
         game_round=game_round, players=remaining_players, previous_state=previous_betting_state)
 
     if (betting_state.is_pre_flop_state()):
-        betting_state.add_player_action(game_round.small_blind, ('small_blind', game_round.min_pot))
-        betting_state.add_player_action(game_round.big_blind, ('big_blind', game_round.min_pot*2))
+        betting_state.add_player_action(game_round.small_blind, ('small_blind', game_round.small_blind_stake))
+        betting_state.add_player_action(game_round.big_blind, ('big_blind', game_round.small_blind_stake*2))
 
-        game_state.update_player_pot(game_round.small_blind, -game_round.min_pot)
-        game_state.update_player_pot(game_round.big_blind, -game_round.min_pot*2)
+        game_state.update_player_pot(game_round.small_blind, -game_round.small_blind_stake)
+        game_state.update_player_pot(game_round.big_blind, -game_round.small_blind_stake*2)
 
     player_index = game_round.get_first_moving_player_index()
     while(not betting_state.is_betting_state_complete()):
@@ -135,7 +155,7 @@ def player_move(player_index: int, game_round: GameRound, betting_state: Betting
     player = game_round.players[player_index]
     player_pot = game_state.get_player_pot(player)
 
-    valid_actions = betting_state.get_valid_actions(player=player, player_pot=player_pot, min_pot=game_round.min_pot)
+    valid_actions = betting_state.get_valid_actions(player=player, player_pot=player_pot, small_blind_stake=game_round.small_blind_stake)
     if (valid_actions):
         player_action = agent_call_action(valid_actions=valid_actions)
         betting_state.add_player_action(player, player_action)

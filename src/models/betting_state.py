@@ -80,7 +80,7 @@ class BettingState:
     def add_player_action(self, player: str, player_action: Tuple[str, int]):
         self._player_actions.setdefault(player, []).append(player_action)
 
-    def get_valid_actions(self, player: str, player_pot: int, min_pot: int) -> List[Tuple[str, int, int]]:
+    def get_valid_actions(self, player: str, player_pot: int, small_blind_stake: int) -> List[Tuple[str, int, int]]:
         # valid actions: check, call, raise, fold
         # no_action (if player has already folded) -> for this we return an empty list
         valid_actions = []
@@ -98,15 +98,15 @@ class BettingState:
 
         if (biggest_betting_chip == 0):
             valid_actions.append(('check', 0, 0))
-            valid_actions.append(('raise', min_pot, player_pot))
+            valid_actions.append(('raise', small_blind_stake, player_pot))
         else:
             current_betting_chip = sum([action[1] for action in self._player_actions[player]]) if player in self._player_actions else 0
             if (current_betting_chip < biggest_betting_chip):
                 valid_actions.append(('call', biggest_betting_chip - current_betting_chip, biggest_betting_chip - current_betting_chip))
-                valid_actions.append(('raise', biggest_betting_chip - current_betting_chip + min_pot, player_pot))
+                valid_actions.append(('raise', biggest_betting_chip - current_betting_chip + small_blind_stake, player_pot))
             else:
                 valid_actions.append(('check', 0, 0))
-                valid_actions.append(('raise', min_pot, player_pot))
+                valid_actions.append(('raise', small_blind_stake, player_pot))
 
         return valid_actions
 

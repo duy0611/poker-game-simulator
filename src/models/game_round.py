@@ -5,7 +5,7 @@ from poker import Card, Hand, Combo
 class GameRound:
 
     def __init__(self, pos: int, small_blind: str, big_blind: str, 
-        players: List[str], player_pots: List[int], player_hands: List[Combo], min_pot: int):
+        players: List[str], player_pots: List[int], player_hands: List[Combo], small_blind_stake: int):
 
         self._pos = pos
         self._small_blind = small_blind
@@ -13,7 +13,7 @@ class GameRound:
         self._players = players
         self._player_pots = player_pots
         self._player_hands = player_hands
-        self._min_pot = min_pot
+        self._small_blind_stake = small_blind_stake
 
     @property
     def small_blind(self):
@@ -36,8 +36,8 @@ class GameRound:
         return self._player_hands
 
     @property
-    def min_pot(self):
-        return self._min_pot
+    def small_blind_stake(self):
+        return self._small_blind_stake
 
     def get_first_moving_player_index(self):
         return self._players.index(self._small_blind)
@@ -57,9 +57,9 @@ class GameRound:
             players={players},
             player_pots={player_pots},
             player_hands={player_hands},
-            min_pot={min_pot}
+            small_blind_stake={small_blind_stake}
         ]
         """.format(pos=self._pos, small_blind=self._small_blind, big_blind=self._big_blind,
             players=self._players, player_pots=self._player_pots, player_hands=self._player_hands, 
-            min_pot=self._min_pot)
+            small_blind_stake=self._small_blind_stake)
         
