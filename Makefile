@@ -16,6 +16,10 @@ DOCKER_COMPOSE_NETWORK := "poker-game-simulator-shared"
 run: .venv
 	pipenv run python main.py
 
+.PHONY: run-reload
+run-reload: .venv
+	FLASK_APP=app.py FLASK_ENV=development pipenv run flask run
+
 .PHONY: run-docker
 run-docker: build-agent build-simulator
 	docker container ls -aq | xargs --no-run-if-empty docker stop
