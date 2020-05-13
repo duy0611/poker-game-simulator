@@ -1,0 +1,15 @@
+from flask import Flask, request, jsonify
+app = Flask(__name__)
+
+from src.poker_agent import get_agent_action
+
+
+@app.route('/agent_action', methods=['POST'])
+def agent_action():
+    content = request.get_json()
+    valid_actions = [tuple(x) for x in content['valid_actions']]
+    return jsonify(agent_action=get_agent_action(valid_actions=valid_actions))
+
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)

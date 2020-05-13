@@ -9,6 +9,8 @@ pytest = "==5.4.2"
 
 [packages]
 poker = "==0.30.0"
+docker = "==4.2.0"
+flask = "==1.1.2"
 
 [requires]
 python_version = "3.7"

@@ -14,3 +14,11 @@ DOCKER_COMPOSE_PROJECT := "poker-game-simulator"
 .PHONY: run
 run: .venv
 	pipenv run python main.py
+
+.PHONY: build-agent
+build-agent:
+	cd agent-build && docker build . -t poker-agent:default-latest
+
+.PHONY: build-simulator
+build-simulator:
+	docker build . -t poker-simulator:latest

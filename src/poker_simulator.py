@@ -1,3 +1,4 @@
+import logging
 import random
 from poker import Card, Hand, Combo
 from typing import List, Tuple
@@ -10,21 +11,28 @@ from src.models.betting_state import BettingState
 from src.poker_agent import agent_call_action
 
 
-def start_simulation(players: List[str], init_pot: int = 100, small_blind_stake: int = 5, max_iteration: int = 100):
+LOGGING_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+logging.basicConfig(format=LOGGING_FORMAT, level='INFO')
+
+
+LOGGER = logging.getLogger(__name__)
+
+
+def start_simulation(players: List[str], init_pot: int = 100, small_blind_stake: int = 5, max_iterations: int = 100):
     histogram = { player: 0 for player in players }
-    for i in range(max_iteration):
+    for i in range(max_iterations):
         winner = start_new_game(players=players, init_pot=init_pot, small_blind_stake=small_blind_stake)
         histogram[winner] += 1
     
-    histogram_percentage = { player: str(win_count*100/max_iteration)+'%' for (player, win_count) in histogram.items() }
+    histogram_percentage = { player: str(win_count*100/max_iterations)+'%' for (player, win_count) in histogram.items() }
 
-    print('End simulation. Winners are: %s' % histogram_percentage)
+    LOGGER.info('End simulation. Winners are: %s' % histogram_percentage)
 
 
-def start_new_game(players: List[str], init_pot: int = 100, small_blind_stake: int = 5, max_round: int = 100):
+def start_new_game(players: List[str], init_pot: int = 100, small_blind_stake: int = 5, max_rounds: int = 100):
     new_game = Game(players=players, init_pot=init_pot, small_blind_stake=small_blind_stake)
 
-    print('New game: %s' % new_game)
+    LOGGER.info('New game: %s' % new_game)
 
     game_result = GameResult(None)
 
@@ -33,10 +41,10 @@ def start_new_game(players: List[str], init_pot: int = 100, small_blind_stake: i
         player_pots=[init_pot for _ in range(len(players))]
     )
 
-    print('New game state: %s' % game_state)
+    LOGGER.debug('New game state: %s' % game_state)
 
-    # test with only max_round
-    for pos in range(max_round):
+    # test with only max_rounds
+    for pos in range(max_rounds):
 
         if len(game_state.remaining_players) == 1:
             game_result.set_winner(game_state.remaining_players[0])
@@ -53,7 +61,7 @@ def start_new_game(players: List[str], init_pot: int = 100, small_blind_stake: i
             player_hands=game_state.generate_player_hands(deck),
             small_blind_stake=small_blind_stake)
 
-        print('New game round: %s' % game_round)
+        LOGGER.debug('New game round: %s' % game_round)
 
         state_index = -1
         board_cards: List[Card] = []
@@ -68,7 +76,7 @@ def start_new_game(players: List[str], init_pot: int = 100, small_blind_stake: i
 
         # post-flop state
         board_cards.extend([deck.pop() for __ in range(3)])
-        print('Board cards: %s' % board_cards)
+        LOGGER.debug('Board cards: %s' % board_cards)
 
         state_index = state_index + 1
         next_move, post_flop_state = game_state_move(state_index, "post-flop", board_cards, game_round, game_state, pre_flop_state)
@@ -79,7 +87,7 @@ def start_new_game(players: List[str], init_pot: int = 100, small_blind_stake: i
         
         # turn state
         board_cards.extend([deck.pop() for __ in range(1)])
-        print('Board cards: %s' % board_cards)
+        LOGGER.debug('Board cards: %s' % board_cards)
 
         state_index = state_index + 1
         next_move, turn_state = game_state_move(state_index, "turn", board_cards, game_round, game_state, post_flop_state)
@@ -90,7 +98,7 @@ def start_new_game(players: List[str], init_pot: int = 100, small_blind_stake: i
 
         # river state
         board_cards.extend([deck.pop() for __ in range(1)])
-        print('Board cards: %s' % board_cards)
+        LOGGER.debug('Board cards: %s' % board_cards)
 
         state_index = state_index + 1
         next_move, river_state = game_state_move(state_index, "river", board_cards, game_round, game_state, turn_state)
@@ -101,7 +109,7 @@ def start_new_game(players: List[str], init_pot: int = 100, small_blind_stake: i
         # determine winner in the remaining players by number of chips
         game_result.set_winner(game_state.get_player_with_most_chips())
 
-    print('End game. Winner is ' + game_result.winner)
+    LOGGER.debug('End game. Winner is ' + game_result.winner)
     return game_result.winner
 
 
@@ -138,17 +146,17 @@ def game_state_move(state_index: int, board_state: str, board_cards: List[Card],
 
 def round_complete(game_round: GameRound, game_state: GameState, *betting_states: List[BettingState]):
     final_betting_state = betting_states[-1]
-    print('Round complete at betting state: %s' % final_betting_state.board_state)
+    LOGGER.debug('Round complete at betting state: %s' % final_betting_state.board_state)
 
     round_winner = final_betting_state.get_round_winner()
     round_total_pot = final_betting_state.get_round_total_pot()
 
-    print('Round winner: %s' % round_winner)
-    print('Round total pot: %d' % round_total_pot)
+    LOGGER.debug('Round winner: %s' % round_winner)
+    LOGGER.debug('Round total pot: %d' % round_total_pot)
 
     game_state.update_player_pot(round_winner, round_total_pot)
 
-    print('Updated game state: %s' % game_state)
+    LOGGER.debug('Updated game state: %s' % game_state)
 
 
 def player_move(player_index: int, game_round: GameRound, betting_state: BettingState, game_state: GameState):

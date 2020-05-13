@@ -1,8 +1,12 @@
+import logging
 from typing import List, Tuple, Dict
 from poker import Card, Hand, Combo
 
 from src.models.game_round import GameRound
 from src.poker_hand_check import detect_hand, compare_hands
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 class BettingState:
@@ -117,7 +121,7 @@ class BettingState:
         player_hand_checks = [detect_hand(player_hand, self._board_cards) 
             for player_hand in self._game_round.get_ordered_player_hands(self.remaining_players)]
 
-        print('Player hand checks: %s' % player_hand_checks)
+        LOGGER.debug('Player hand checks: %s' % player_hand_checks)
 
         best_hand = compare_hands(player_hand_checks)
 
