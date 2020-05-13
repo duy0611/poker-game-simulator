@@ -1,6 +1,7 @@
 from collections import defaultdict
 from itertools import combinations
 from typing import List, Tuple
+
 from poker import Card, Hand, Combo, Rank
 
 
@@ -12,42 +13,34 @@ card_order_dict = {
 }
 
 
-# Return best possible hand with its score
+# Return best possible hand from the combination of Deck and Player's hand
 def detect_hand(player_hand: Combo, board_cards: List[Card]) -> Tuple[int, List[Card]]:
     all_cards = [player_hand.first, player_hand.second] + board_cards
     hand_combinations = list(combinations(all_cards, 5))
 
-    hand_combinations_with_rank = {}
-    for hand in hand_combinations:
-        hand_value = check_hand(hand)
-        hand_combinations_with_rank.setdefault(hand_value, []).append(hand)
+    return compare_hands(hand_combinations)
 
-    best_hand_score = max(hand_combinations_with_rank.keys())
-    best_hands = hand_combinations_with_rank[best_hand_score]
+# Return winner hand
+def compare_hands(hands):
+    hand_scores = [(i, eval_hand(hand)) for i, hand in enumerate(hands)]
+    winner = sorted(hand_scores , key=lambda x:x[1])[-1][0]
+    return hands[winner]
 
-    best_hand = []
+# Return score and sorted ranks
+def eval_hand(hand):
+    ranks = [c.rank for c in hand]
+    rcounts = {card_order_dict[r]: ranks.count(r) for r in ranks}.items()
+    score, ranks = zip(*sorted((cnt, rank) for rank, cnt in rcounts)[::-1])
+    if len(score) == 5: # card not same kind
+        if ranks[0:2] == (card_order_dict[Rank.ACE], card_order_dict[Rank.FIVE]): # adjust if 5 high straight ["A", "2", "3", "4", "5"]
+            ranks = (card_order_dict[Rank.FIVE], card_order_dict[Rank.FOUR], card_order_dict[Rank.THREE], card_order_dict[Rank.DEUCE], 1)
+        straight = check_straight(hand)
+        flush = check_flush(hand)
+        '''no pair==high card, straight, flush, or straight flush'''
+        score = ([(1,), (3,1,1,1)], [(3,1,1,2), (5,)])[flush][straight]
+    return score, ranks
 
-    if len(best_hands) == 1 or best_hand_score == 10:
-        best_hand = best_hands[0]
-    else:
-        best_hand = compare_tied_hands(best_hands, best_hand_score)
-
-    return best_hand_score, best_hand
-
-
-# Return winner hand if they are tied (same hand score)
-def compare_tied_hands(hands, hand_score):
-    best_hand = []
-
-    if (hand_score in [9, 6, 5, 1]):
-        best_hand = compare_card_not_same_kind(hands)
-    elif(hand_score in [8, 7, 4, 3, 2]):
-        best_hand = compare_card_same_kind(hands)
-    
-    return best_hand
-
-
-# Return Values:
+# Return hand ranking:
 # Royal Flush: (10,)
 # Straight Flush: (9, high card)
 # Four of a Kind: (8, quad card, kicker)
@@ -58,7 +51,7 @@ def compare_tied_hands(hands, hand_score):
 # Two Pair: (3, high pair card, low pair card, kicker)
 # Pair: (2, pair card, (kicker high card, kicker med card, kicker low card))
 # High Card: (1, [high card, second high card, third high card, etc.])
-def check_hand(hand):
+def eval_hand_ranking(hand):
     if check_royal_flush(hand):
         return 10
     elif check_straight_flush(hand):
@@ -166,33 +159,3 @@ def check_one_pairs(hand):
         return True
     else:
         return False
-
-def check_high_card(hand):
-    values = [c.rank for c in hand]
-    rank_values = [card_order_dict[i] for i in values]
-    return max(rank_values)
-
-# straight_flush, flush, straight, high card
-def compare_card_not_same_kind(hands):
-    hand_scores = [(i, check_high_card(hand)) for i, hand in enumerate(hands)]
-    winner = sorted(hand_scores , key=lambda x:x[1])[-1][0]
-    return hands[winner]
-
-# four_of_a_kind, full_house, three_of_a_kind, two_pairs, one_pair
-def compare_card_same_kind(hands):
-    hand_scores = [(i, _eval_card_same_kind(hand)) for i, hand in enumerate(hands)]
-    winner = sorted(hand_scores , key=lambda x:x[1])[-1][0]
-    return hands[winner]
-
-def _eval_card_not_same_kind(hand):
-    ranks = [c.rank for c in hand]
-    rcounts = {card_order_dict[r]: ranks.count(r) for r in ranks}.items()
-    score, ranks = zip(*sorted((cnt, rank) for rank, cnt in rcounts)[::-1])
-    return score, ranks
-
-def _eval_card_same_kind(hand):
-    ranks = [c.rank for c in hand]
-    rcounts = {card_order_dict[r]: ranks.count(r) for r in ranks}.items()
-    score, ranks = zip(*sorted((cnt, rank) for rank, cnt in rcounts)[::-1])
-    return score, ranks
-    

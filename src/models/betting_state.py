@@ -2,7 +2,7 @@ from typing import List, Tuple, Dict
 from poker import Card, Hand, Combo
 
 from src.models.game_round import GameRound
-from src.poker_hand_check import detect_hand, compare_tied_hands
+from src.poker_hand_check import detect_hand, compare_hands
 
 
 class BettingState:
@@ -117,21 +117,14 @@ class BettingState:
         player_hand_checks = [detect_hand(player_hand, self._board_cards) 
             for player_hand in self._game_round.get_ordered_player_hands(self.remaining_players)]
 
-        print('Player hands eval: %s' % player_hand_checks)
-        
-        best_score = max([score for score, hand in player_hand_checks])
-        hands_with_best_score = [hand for score, hand in player_hand_checks if score == best_score]
+        print('Player hand checks: %s' % player_hand_checks)
 
-        best_hand = []
-        if (len(hands_with_best_score) > 1):
-            best_hand = compare_tied_hands(hands_with_best_score, best_score)
-        else:
-            best_hand = hands_with_best_score[0]
+        best_hand = compare_hands(player_hand_checks)
 
-        # detect if it is a 'true' tied
+        # detect if it is a tied round
         # TODO: do something here
 
-        winner = self.remaining_players[player_hand_checks.index((best_score, best_hand))]
+        winner = self.remaining_players[player_hand_checks.index((best_hand))]
 
         return winner
 
