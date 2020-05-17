@@ -3,7 +3,7 @@ from typing import List
 
 
 class Game:
-    
+
     def __init__(self, players: List[str], init_pot: int, small_blind_stake: int):
         self._uuid = uuid.SafeUUID
         self._players = players
@@ -30,4 +30,7 @@ class Game:
             init_pot={init_pot},
             small_blind_stake={small_blind_stake}
         ]
-        """.format(uuid=self._uuid, players=self._players, init_pot=self._init_pot, small_blind_stake=self._small_blind_stake)
+        """.format(
+            uuid=self._uuid, players=self._players,
+            init_pot=self._init_pot, small_blind_stake=self._small_blind_stake
+        )

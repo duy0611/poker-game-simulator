@@ -1,11 +1,11 @@
 from typing import List
-from poker import Card, Hand, Combo
+from poker import Combo
 
 
 class GameRound:
 
-    def __init__(self, pos: int, small_blind: str, big_blind: str, 
-        players: List[str], player_pots: List[int], player_hands: List[Combo], small_blind_stake: int):
+    def __init__(self, pos: int, small_blind: str, big_blind: str,
+                 players: List[str], player_pots: List[int], player_hands: List[Combo], small_blind_stake: int):
 
         self._pos = pos
         self._small_blind = small_blind
@@ -59,7 +59,8 @@ class GameRound:
             player_hands={player_hands},
             small_blind_stake={small_blind_stake}
         ]
-        """.format(pos=self._pos, small_blind=self._small_blind, big_blind=self._big_blind,
-            players=self._players, player_pots=self._player_pots, player_hands=self._player_hands, 
+        """.format(
+            pos=self._pos, small_blind=self._small_blind, big_blind=self._big_blind,
+            players=self._players, player_pots=self._player_pots, player_hands=self._player_hands,
             small_blind_stake=self._small_blind_stake)
         
